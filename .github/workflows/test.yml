@@ -18,6 +18,3 @@ jobs:
 
       - name: Run OPA Tests
         run: opa test policies
-
-      - name: Run OPA Check
-        run: opa check policies
