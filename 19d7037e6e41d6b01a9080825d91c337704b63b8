@@ -1,0 +1,6 @@
+lisa-design:
+- Listener policies intentionally do not inspect parent load balancer scheme; internal and internet-facing listeners are evaluated the same, and plaintext exceptions must be expressed with `policy_inputs.allowed_plaintext_listener_arns`.
+- `GENEVE` listeners are skipped for HTTPS enforcement and information movement because Gateway Load Balancer listeners have no TLS, SSL policy, or certificate semantics in the listener evidence contract.
+- TLS policy approval treats `config.ssl_policy` as an exact AWS SSL policy name allow-list lookup and does not inspect ciphers or protocol internals; those details are outside the emitted listener evidence.
+- Certificate checks only require a non-empty `config.certificate_arn`; certificate expiry, renewal, and trust details are intentionally left to ACM policy bundles.
+- Information movement protocol and port checks are opt-in by explicitly supplied non-empty allow-lists, so omitted or empty `approved_listener_protocols` or `approved_listener_ports` means unrestricted for that dimension.
