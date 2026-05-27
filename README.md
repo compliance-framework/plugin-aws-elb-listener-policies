@@ -1,127 +1,66 @@
-# AWS RDS policies for use in Compliance Framework plugins
+# AWS ELBv2 listener policies
+
+Standalone OPA/Rego policy bundle for listener evidence emitted by the `aws-elbv2` Compliance Framework plugin.
+
+## Input schema
+
+Each policy evaluates documents where `input.resource.type == "listener"`.
+
+```json
+{
+  "schema_version": "v1",
+  "source": "aws-elbv2",
+  "account": { "account_id": "123456789012" },
+  "region": { "name": "us-east-1" },
+  "resource": {
+    "id": "...listener/app/my-alb/abc/def",
+    "arn": "arn:aws:elasticloadbalancing:...:listener/app/my-alb/abc/def",
+    "type": "listener"
+  },
+  "config": {
+    "listener_arn": "arn:aws:elasticloadbalancing:...:listener/app/my-alb/abc/def",
+    "load_balancer_arn": "arn:aws:elasticloadbalancing:...:loadbalancer/app/my-alb/abc",
+    "protocol": "HTTPS",
+    "port": 443,
+    "ssl_policy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
+    "certificate_arn": "arn:aws:acm:us-east-1:123456789012:certificate/abc"
+  }
+}
+```
+
+Certificate expiry and renewal are intentionally out of scope for this bundle and are handled by ACM policy bundles.
+
+## Implemented policy packages
+
+| Package | Purpose | Metric ID | Controls |
+| --- | --- | --- | --- |
+| `compliance_framework.elbv2_listener_https_enforcement` | Flags plaintext `HTTP`, `TCP`, `UDP`, or `TCP_UDP` listeners unless explicitly allowed. | `ACM_TLS_ENDPOINTS` | `ctrl-cc6-2-014`, `ctrl-cc6-2-018`, `ctrl-cc6-3-004`, `ctrl-cc6-7-001`, `ctrl-cc6-7-004`, `ctrl-cc6-7-007`, `ctrl-cc6-7-009`, `ctrl-cc6-7-010` |
+| `compliance_framework.elbv2_tls_policy_approved` | Flags `HTTPS` or `TLS` listeners whose `ssl_policy` is not approved. | `ACM_TLS_ENDPOINTS` | `ctrl-cc6-7-007`, `ctrl-cc6-7-008`, `ctrl-cc6-7-010`, `ctrl-cc6-7-011` |
+| `compliance_framework.elbv2_certificate_in_use` | Flags `HTTPS` or `TLS` listeners with no certificate ARN. | `ACM_TLS_ENDPOINTS` | `ctrl-cc6-7-007`, `ctrl-cc6-7-008`, `ctrl-cc6-7-010` |
+| `compliance_framework.elbv2_information_movement` | Flags listener protocols or ports outside configured approved lists. | `ACM_TLS_ENDPOINTS` | `ctrl-cc6-7-002`, `ctrl-cc6-7-005`, `ctrl-cc6-7-008`, `ctrl-cc6-7-011` |
+
+All policies skip non-`listener` records. Policies with no meaningful TLS or information-movement evaluation for Gateway Load Balancer listeners skip `GENEVE`.
+
+## Policy data
+
+Configurable policy defaults are stored in `policies/data.json` and may be overridden by the `policy_data` plugin as flattened data parameters.
+
+| Name | Default | Description |
+| --- | --- | --- |
+| `data.approved_ssl_policies` | `["ELBSecurityPolicy-TLS13-1-2-2021-06", "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"]` | SSL policy names allowed for `HTTPS` and `TLS` listeners. |
+| `data.allowed_plaintext_listener_arns` | `[]` | Listener ARNs allowed to use plaintext `HTTP`, `TCP`, `UDP`, or `TCP_UDP`. |
+| `data.approved_listener_protocols` | `[]` | Approved listener protocols. If omitted or empty, protocol checks pass. |
+| `data.approved_listener_ports` | `[]` | Approved listener ports. Empty means unrestricted. |
 
 ## Testing
 
-
 ```shell
 opa test policies
+opa check policies
 ```
 
 ## Bundling
 
-Policies are built into bundle to make distribution easier. 
-
-You can easily build the policies by running 
 ```shell
 make build
-```
-
-## Implemented RDS policy packages
-
-This bundle includes focused, document-aligned policies:
-
-- `compliance_framework.rds_database_storage_encryption`
-- `compliance_framework.rds_snapshot_encryption`
-- `compliance_framework.rds_network_boundary`
-- `compliance_framework.rds_iam_database_auth`
-- `compliance_framework.rds_tls_enforcement`
-- `compliance_framework.rds_deletion_protection`
-- `compliance_framework.rds_deletion_audit_events`
-- `compliance_framework.rds_backup_retention`
-- `compliance_framework.rds_snapshot_coverage`
-- `compliance_framework.rds_pitr_freshness`
-- `compliance_framework.rds_multi_az_redundancy`
-- `compliance_framework.rds_snapshot_restore_access`
-- `compliance_framework.rds_snapshot_status`
-- `compliance_framework.rds_log_exports`
-- `compliance_framework.rds_capacity_monitoring`
-- `compliance_framework.rds_backup_restore_events`
-- `compliance_framework.rds_management_audit_events`
-
-Each policy package reads the normalized `aws-rds-aurora-psql` plugin input
-schema. Every package has a resource-aware `title` and a package-level
-`description` that explains the observed state for the current RDS instance,
-cluster, or snapshot context.
-
-Snapshot encryption, status, and restore-access policies evaluate standalone
-snapshot records only. The collector is expected to emit every manual snapshot
-as its own record and only the latest automated snapshot for each database
-source, so retained older automated snapshots do not create stale policy
-results. Snapshot coverage is evaluated on the parent database resource using
-the selected snapshot list attached to that resource.
-
-Common optional `policy_inputs`:
-
-- `minimum_backup_retention_days`, default `1`
-- `maximum_personal_information_retention_days`, default `365`
-- `maximum_pitr_lag_hours`, default `24`
-- `approved_snapshot_accounts`, default `[]`
-- `fail_on_unknown_snapshot_sharing`, default `true`
-- `required_log_exports`, default `["postgresql"]`
-- `require_multi_az`, default `true`
-- `require_snapshot_history`, default `true`
-- `require_automated_snapshot`, default `false`
-- `require_access_removal_events`, `require_rds_management_audit_events`,
-  `require_backup_events`, `require_restore_events`,
-  `require_capacity_metrics`, `require_enhanced_monitoring`,
-  `require_deletion_audit_events`, and `require_disposal_audit_events`,
-  all default `false`
-
-## Running policies locally
-
-```shell
-opa eval -I -b policies -f pretty data.compliance_framework.rds_database_storage_encryption.violation <<EOF
-{
-  "resource": {"type": "db-instance"},
-  "config": {
-    "storage_encrypted": false,
-    "kms_key_id": "",
-    "publicly_accessible": true,
-    "vpc_security_groups": [],
-    "iam_database_authentication_enabled": false,
-    "ssl_enforcement": {},
-    "deletion_protection": false
-  },
-  "policy_inputs": {}
-}
-EOF
-```
-
-## Writing policies.
-
-Policies are written in the [Rego](https://www.openpolicyagent.org/docs/latest/policy-language/) language.
-
-```rego
-package ssh.deny_password_auth
-
-import future.keywords.in
-
-violation[{
-    "title": "Host SSH is using password authentication.",
-    "description": "Host SSH should not use password, as this is insecure to brute force attacks from external sources.",
-    "remarks": "Migrate to using SSH Public Keys, and switch off password authentication."
-}] {
-	"yes" in input.passwordauthentication
-}
-```
-
-## Metadata
-
-Plugins expect policies to contain a metadata section as comments, with a `# METADATA` line to indicate it. This metadata should be in a YAML format, and contain a title and description of the policy. Other configuration can be set also, like the schedule that a policy should run on, or the control that it is linked to.
-
-Any other comments can be added as normal (before and after) with a line separator between them and the metadata.
-
-Here is an example metadata:
-```opa
-# your custom comment
-
-# METADATA
-# title: <your-title>
-# description: <your-description>
-# custom:
-#   controls:
-#     - <control-id>
-#   schedule: "<cron-string>"
-
-# your custom comment
 ```

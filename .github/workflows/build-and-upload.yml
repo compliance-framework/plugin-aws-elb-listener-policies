@@ -29,6 +29,6 @@ jobs:
       - name: gooci Upload Version
         run: gooci upload-single dist/bundle.tar.gz ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:${{github.ref_name}}
       - name: gooci Upload Latest
-        if: "!github.event.release.prerelease"
+        if: github.ref_type == 'tag' && !contains(github.ref_name, '-')
         run: gooci upload-single dist/bundle.tar.gz ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest
         
