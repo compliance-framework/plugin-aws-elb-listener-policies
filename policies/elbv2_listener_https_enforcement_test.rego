@@ -51,3 +51,8 @@ test_allowed_plaintext_listener_compliant if {
 	])
 	count(policy.violation) == 0 with input as inp
 }
+
+test_tcp_udp_listener_violates if {
+	inp := object.union_n([base_input, {"config": object.union(base_input.config, {"protocol": "TCP_UDP", "port": 443})}])
+	count(policy.violation) >= 1 with input as inp
+}

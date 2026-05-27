@@ -61,3 +61,11 @@ test_missing_approved_lists_pass if {
 	])
 	count(policy.violation) == 0 with input as inp
 }
+
+test_lowercase_approved_protocol_matches_normalized_listener_protocol if {
+	inp := object.union_n([
+		base_input,
+		{"policy_inputs": object.union(base_input.policy_inputs, {"approved_listener_protocols": ["https"]})},
+	])
+	count(policy.violation) == 0 with input as inp
+}

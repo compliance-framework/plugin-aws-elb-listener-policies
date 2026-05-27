@@ -1,7 +1,5 @@
 package compliance_framework.elbv2_certificate_in_use
 
-import future.keywords.in
-
 # METADATA
 # title: ELBv2 HTTPS/TLS listener has a certificate
 # description: Checks whether HTTPS/TLS listeners have a certificate ARN configured.

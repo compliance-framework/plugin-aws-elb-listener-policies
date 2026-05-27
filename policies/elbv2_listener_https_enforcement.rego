@@ -1,7 +1,5 @@
 package compliance_framework.elbv2_listener_https_enforcement
 
-import future.keywords.in
-
 # METADATA
 # title: ELBv2 listener enforces HTTPS/TLS
 # description: Checks whether a client-facing listener uses an encrypted protocol.
@@ -58,7 +56,7 @@ is_evaluable if {
 }
 
 plaintext_protocol if {
-	protocol in {"HTTP", "TCP", "UDP"}
+	protocol in {"HTTP", "TCP", "UDP", "TCP_UDP"}
 }
 
 plaintext_allowed if {

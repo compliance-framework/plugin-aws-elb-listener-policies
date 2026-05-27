@@ -37,7 +37,7 @@ Certificate expiry and renewal are intentionally out of scope for this bundle an
 
 | Package | Purpose | Metric ID | Controls |
 | --- | --- | --- | --- |
-| `compliance_framework.elbv2_listener_https_enforcement` | Flags plaintext `HTTP`, `TCP`, or `UDP` listeners unless explicitly allowed. | `ACM_TLS_ENDPOINTS` | `ctrl-cc6-2-014`, `ctrl-cc6-2-018`, `ctrl-cc6-3-004`, `ctrl-cc6-7-001`, `ctrl-cc6-7-004`, `ctrl-cc6-7-007`, `ctrl-cc6-7-009`, `ctrl-cc6-7-010` |
+| `compliance_framework.elbv2_listener_https_enforcement` | Flags plaintext `HTTP`, `TCP`, `UDP`, or `TCP_UDP` listeners unless explicitly allowed. | `ACM_TLS_ENDPOINTS` | `ctrl-cc6-2-014`, `ctrl-cc6-2-018`, `ctrl-cc6-3-004`, `ctrl-cc6-7-001`, `ctrl-cc6-7-004`, `ctrl-cc6-7-007`, `ctrl-cc6-7-009`, `ctrl-cc6-7-010` |
 | `compliance_framework.elbv2_tls_policy_approved` | Flags `HTTPS` or `TLS` listeners whose `ssl_policy` is not approved. | `ACM_TLS_ENDPOINTS` | `ctrl-cc6-7-007`, `ctrl-cc6-7-008`, `ctrl-cc6-7-010`, `ctrl-cc6-7-011` |
 | `compliance_framework.elbv2_certificate_in_use` | Flags `HTTPS` or `TLS` listeners with no certificate ARN. | `ACM_TLS_ENDPOINTS` | `ctrl-cc6-7-007`, `ctrl-cc6-7-008`, `ctrl-cc6-7-010` |
 | `compliance_framework.elbv2_information_movement` | Flags listener protocols or ports outside configured approved lists. | `ACM_TLS_ENDPOINTS` | `ctrl-cc6-7-002`, `ctrl-cc6-7-005`, `ctrl-cc6-7-008`, `ctrl-cc6-7-011` |
@@ -49,8 +49,8 @@ All policies skip non-`listener` records. Policies with no meaningful TLS or inf
 | Name | Default | Description |
 | --- | --- | --- |
 | `approved_ssl_policies` | `["ELBSecurityPolicy-TLS13-1-2-2021-06", "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"]` | SSL policy names allowed for `HTTPS` and `TLS` listeners. |
-| `allowed_plaintext_listener_arns` | `[]` | Listener ARNs allowed to use plaintext `HTTP`, `TCP`, or `UDP`. |
-| `approved_listener_protocols` | `["HTTPS", "TLS"]` | Approved listener protocols. If omitted or empty, protocol checks pass. |
+| `allowed_plaintext_listener_arns` | `[]` | Listener ARNs allowed to use plaintext `HTTP`, `TCP`, `UDP`, or `TCP_UDP`. |
+| `approved_listener_protocols` | `[]` | Approved listener protocols. If omitted or empty, protocol checks pass. |
 | `approved_listener_ports` | `[]` | Approved listener ports. Empty means unrestricted. |
 
 ## Testing

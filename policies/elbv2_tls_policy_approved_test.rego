@@ -37,6 +37,11 @@ test_http_listener_skipped if {
 	count(policy.violation) == 0 with input as inp
 }
 
+test_empty_tls_policy_violates if {
+	inp := object.union_n([base_input, {"config": object.union(base_input.config, {"ssl_policy": ""})}])
+	count(policy.violation) >= 1 with input as inp
+}
+
 test_geneve_listener_skipped if {
 	inp := object.union_n([base_input, {"config": object.union(base_input.config, {"protocol": "GENEVE", "port": 6081, "ssl_policy": ""})}])
 	count(policy.violation) == 0 with input as inp

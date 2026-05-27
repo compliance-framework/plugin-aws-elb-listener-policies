@@ -1,7 +1,5 @@
 package compliance_framework.elbv2_information_movement
 
-import future.keywords.in
-
 # METADATA
 # title: ELBv2 listener uses approved protocols and ports
 # description: Checks whether listener protocols and ports match approved information movement constraints.
@@ -45,6 +43,7 @@ protocol := upper(object.get(config, "protocol", ""))
 port := object.get(config, "port", 0)
 approved_listener_protocols := object.get(policy_inputs, "approved_listener_protocols", [])
 approved_listener_ports := object.get(policy_inputs, "approved_listener_ports", [])
+approved_listener_protocols_normalized := {upper(p) | p := approved_listener_protocols[_]}
 
 skip_reason := sprintf("Resource type %q is not a listener; this policy only applies to listener records.", [resource_type]) if {
 	resource_type != "listener"
@@ -64,7 +63,7 @@ port_check_enabled if {
 }
 
 protocol_approved if {
-	protocol in approved_listener_protocols
+	protocol in approved_listener_protocols_normalized
 }
 
 port_approved if {

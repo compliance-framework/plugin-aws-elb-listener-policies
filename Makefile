@@ -1,12 +1,19 @@
+OPA := $(shell command -v opa 2> /dev/null)
+ifndef OPA
+$(error opa CLI not found. Install from https://www.openpolicyagent.org/docs/latest/#running-opa)
+endif
+
+.PHONY: test validate clean build
+
 test:        ## Run policy unit tests
-	@opa test policies
+	@$(OPA) test policies
 
 validate:    ## Lint/parse policies
-	@opa check policies
+	@$(OPA) check policies
 
 clean:
 	@rm -f dist/*
 
 build: clean ## Build the OCI bundle
 	@mkdir -p dist/
-	@opa build -b policies -o dist/bundle.tar.gz
+	@$(OPA) build -b policies -o dist/bundle.tar.gz

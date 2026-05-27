@@ -1,7 +1,5 @@
 package compliance_framework.elbv2_tls_policy_approved
 
-import future.keywords.in
-
 # METADATA
 # title: ELBv2 listener uses approved TLS policy
 # description: Checks whether HTTPS/TLS listeners use an approved AWS SSL policy.
@@ -55,7 +53,6 @@ skip_reason := sprintf("Resource type %q is not a listener; this policy only app
 is_tls_listener if {
 	resource_type == "listener"
 	protocol in {"HTTPS", "TLS"}
-	ssl_policy != ""
 }
 
 approved_tls_policy if {
