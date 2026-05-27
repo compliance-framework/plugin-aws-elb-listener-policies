@@ -1,0 +1,28 @@
+lisa-addressed:
+---
+Comment (policies/data.json:2):
+this header here creates noise, and makes it harder for the agent / plugin to parse the policy data:
+```
+policy_data:
+  compliance_framework:
+    approved_ssl_policies: []
+```
+As opposed to:
+```
+policy_data
+  approved_ssl_policies: []
+```
+
+The second option is better. Please format policies, this file, and test to use the behavior which is better for users.
+
+I am aware this might be a design decision - we should review the design.
+Replies:
+reviewer conflict detected — pausing until resolved.
+
+This asks to flatten policy_data/data.json so values are not stored under data.compliance_framework.<policy_package>..., but the previous review implementation explicitly moved defaults into policies/data.json under each policy package namespace and updated the policies and README to read data.compliance_framework.elbv2_tls_policy_approved.approved_ssl_policies, data.compliance_framework.elbv2_information_movement.approved_listener_protocols/approved_listener_ports, and data.compliance_framework.elbv2_listener_https_enforcement.allowed_plaintext_listener_arns. The thread contains no human reply authorizing this new flattened shape, so it directly contradicts feedback already implemented in commits dfd5ab8/b91fad9 and the recorded data.json policy_data interface.
+
+Please resolve the conflicting feedback and re-request review.
+
+<!-- lisa-conflict-pending -->
+Conflict resolved. We should indeed flatten the data structure and remove the namespace matching entirely. Every parameter in a given policy package should be flattened.
+Implementation guidance: Flatten the policy data shape and update all related policy code, tests, and documentation to match. In policies/data.json, remove the compliance_framework namespace and per-policy package nesting so each policy package reads its parameters from flattened data keys exposed directly for that package/use case, per the human reply. Update policies/elbv2_tls_policy_approved.rego so approved_ssl_policies is read from the flattened data location instead of data.compliance_framework.elbv2_tls_policy_approved.approved_ssl_policies. Update policies/elbv2_information_movement.rego so approved_listener_protocols and approved_listener_ports are read from the flattened data location instead of data.compliance_framework.elbv2_information_movement.*. Update policies/elbv2_listener_https_enforcement.rego so allowed_plaintext_listener_arns is read from the flattened data location instead of data.compliance_framework.elbv2_listener_https_enforcement.allowed_plaintext_listener_arns. Preserve existing behavior: TLS policy matching remains exact AWS SSL policy name allow-list lookup; information movement protocol/port allow-lists remain opt-in with empty arrays meaning unrestricted; HTTPS enforcement still evaluates internal and internet-facing listeners the same, skips GENEVE, and only allows plaintext when the listener ARN is present in the flattened allowed_plaintext_listener_arns data value. Update tests and README/examples to use the flattened data shape, then run opa fmt on policies and ensure opa check --strict policies and opa test policies still pass.
