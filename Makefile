@@ -9,7 +9,7 @@ test:        ## Run policy unit tests
 	@$(OPA) test policies
 
 validate:    ## Lint/parse policies
-	@$(OPA) check policies
+	@$(OPA) check --strict policies
 
 clean:
 	@rm -f dist/*
