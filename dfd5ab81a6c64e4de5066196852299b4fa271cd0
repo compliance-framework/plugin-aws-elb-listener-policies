@@ -1,0 +1,46 @@
+lisa-addressed:
+---
+Comment (policies/elbv2_tls_policy_approved.rego:44):
+**Blocking — config should come from `data` (policy_data), not be hardcoded.**
+
+The approved-SSL-policy allow-list is a literal default inside `object.get(...)`, and all tunables are read from `input.policy_inputs`. That means these bundles do not participate in the `policy_data` plugin at all — there is no `data.json` in the repo, so an operator cannot override the allow-lists without editing Rego.
+
+Move the configurable defaults into a committed `data.json` under the package namespace (e.g. `data.compliance_framework.elbv2_tls_policy_approved.approved_ssl_policies`) and read them from `data.*`. Per the agreed direction, source config purely from `data` and drop the `input.policy_inputs` path so there is one declarative place for defaults that `policy_data` can override.
+
+Same change applies to the other policies — see linked threads.
+Replies:
+reviewer conflict detected — pausing until resolved.
+
+This asks to source policy configuration purely from data.json and drop input.policy_inputs across the bundle. That conflicts with the implementer's policy_inputs-based configuration contract, especially the design decision that plaintext exceptions are expressed with policy_inputs.allowed_plaintext_listener_arns and the opt-in allow-list behavior for information movement. The TLS allow-list can remain an exact AWS SSL policy name lookup without moving the source of configuration to policy_data.
+
+Please resolve the conflicting feedback and re-request review.
+
+<!-- lisa-conflict-pending -->
+This feedback is correct and this aspect of the design needs to be reviewed. Moving to data.json will not change the behavior above -- it will allow the behavior to happen with no bugs. This is the new agent interface that should be implemented. Inputs from the user (such as allowed_plaintext_listener_arns) are now exposed by the agent via a `data.allowed_plaintext_listener_arns` as opposed to an input.policy_input.allowed_plaintext_listener_arns. The code here simply won't work if we keep the policy_inputs -- instead implement it as `data` reads where defaults are stored as `data.json` objects.
+---
+Comment (policies/elbv2_information_movement.rego:44):
+Part of the `data.json`/`policy_data` change (see the thread on `elbv2_tls_policy_approved.rego:46`). `approved_listener_protocols` / `approved_listener_ports` should be declared in `data.json` and read from `data.*` rather than `input.policy_inputs` with inline `[]` defaults.
+Replies:
+reviewer conflict detected — pausing until resolved.
+
+Moving approved_listener_protocols and approved_listener_ports from input.policy_inputs to data.json contradicts the design decision that information movement protocol and port checks are opt-in through explicitly supplied non-empty allow-lists, with omitted or empty lists meaning unrestricted for that dimension.
+
+Please resolve the conflicting feedback and re-request review.
+
+<!-- lisa-conflict-pending -->
+This feedback is correct and this aspect of the design needs to be reviewed. Moving to data.json will not change the behavior above -- it will allow the behavior to happen with no bugs. This is the new agent interface that should be implemented. Inputs from the user (such as allowed_plaintext_listener_arns) are now exposed by the agent via a `data.allowed_plaintext_listener_arns` as opposed to an input.policy_input.allowed_plaintext_listener_arns. The code here simply won't work if we keep the policy_inputs -- instead implement it as `data` reads where defaults are stored as `data.json` objects.
+---
+Comment (policies/elbv2_listener_https_enforcement.rego:47):
+Part of the `data.json`/`policy_data` change (see the thread on `elbv2_tls_policy_approved.rego:46`). `allowed_plaintext_listener_arns` should move to `data.json` and be read from `data.*`.
+Replies:
+reviewer conflict detected — pausing until resolved.
+
+Moving allowed_plaintext_listener_arns from input.policy_inputs to data.json directly contradicts the design decision that plaintext listener exceptions must be expressed with policy_inputs.allowed_plaintext_listener_arns.
+
+Please resolve the conflicting feedback and re-request review.
+
+<!-- lisa-conflict-pending -->
+This feedback is correct and this aspect of the design needs to be reviewed. Moving to data.json will not change the behavior above -- it will allow the behavior to happen with no bugs. This is the new agent interface that should be implemented. Inputs from the user (such as allowed_plaintext_listener_arns) are now exposed by the agent via a `data.allowed_plaintext_listener_arns` as opposed to an input.policy_input.allowed_plaintext_listener_arns. The code here simply won't work if we keep the policy_inputs -- instead implement it as `data` reads where defaults are stored as `data.json` objects.
+Implementation guidance: Implement the new policy_data/data.json interface for TLS policy configuration. In policies/elbv2_tls_policy_approved.rego, stop reading approved_ssl_policies from input.policy_inputs or inline object.get defaults. Add or update a committed data.json at the bundle data root so it exposes the allow-list under the policy namespace, for example data.compliance_framework.elbv2_tls_policy_approved.approved_ssl_policies. Read that data value in the Rego rule and preserve the existing behavior: compare config.ssl_policy as an exact AWS SSL policy name against the approved list, do not inspect cipher/protocol internals, and keep any GENEVE skip behavior unchanged if present. Also apply the same data.json pattern to the related policy tunables called out in the linked threads. The human reply resolved the earlier policy_inputs design conflict: user-provided values are now surfaced by the agent through data, with defaults stored in data.json.
+Implementation guidance: Move information movement tunables from input.policy_inputs to data.json/data reads. In policies/elbv2_information_movement.rego, replace reads of input.policy_inputs.approved_listener_protocols and input.policy_inputs.approved_listener_ports, including inline [] defaults, with reads from data under the policy namespace, for example data.compliance_framework.elbv2_information_movement.approved_listener_protocols and approved_listener_ports. Add matching defaults to the committed data.json as empty arrays. Preserve the existing opt-in semantics exactly: omitted or empty approved_listener_protocols means protocol is unrestricted, omitted or empty approved_listener_ports means port is unrestricted, and only non-empty lists should filter listeners. Do not add load balancer scheme checks or change GENEVE handling unless the existing code already does so. The human reply resolved the prior conflict and establishes data.json as the new agent interface.
+Implementation guidance: Move plaintext listener exceptions from input.policy_inputs to data.json/data reads. In policies/elbv2_listener_https_enforcement.rego, replace input.policy_inputs.allowed_plaintext_listener_arns and any inline default with a data read, using a committed data.json default such as data.compliance_framework.elbv2_listener_https_enforcement.allowed_plaintext_listener_arns set to an empty array. Preserve the current HTTPS enforcement behavior: evaluate internal and internet-facing listeners the same, skip GENEVE listeners as before, and allow plaintext only when the listener ARN appears in the data-provided allowed_plaintext_listener_arns list. Do not reintroduce parent load balancer scheme inspection. The human reply explicitly says user inputs such as allowed_plaintext_listener_arns are now exposed via data.allowed_plaintext_listener_arns/data.json rather than input.policy_inputs, so implement the new data-based interface.
