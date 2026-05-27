@@ -1,0 +1,38 @@
+lisa-addressed:
+---
+Comment (.github/workflows/test.yml:23):
+_🧹 Nitpick_ | _🔵 Trivial_ | _⚡ Quick win_
+
+**Consider updating Makefile to match CI strictness.**
+
+The CI now runs `opa check --strict policies`, but the Makefile `validate` target uses `opa check policies` without the `--strict` flag. This means developers can pass `make validate` locally but still fail in CI.
+
+To maintain consistency between local development and CI, update the Makefile:
+
+```makefile
+validate:    ## Lint/parse policies
+	@$(OPA) check --strict policies
+```
+
+This ensures developers catch the same issues locally that CI will catch.
+
+<details>
+<summary>🤖 Prompt for AI Agents</summary>
+
+```
+Verify each finding against current code. Fix only still-valid issues, skip the
+rest with a brief reason, keep changes minimal, and validate.
+
+In @.github/workflows/test.yml around lines 22 - 23, The Makefile's validate
+target currently runs 'opa check policies' which differs from CI; update the
+validate recipe (the 'validate' target) to call the same strict command used in
+CI by adding the --strict flag (e.g., use $(OPA) check --strict policies) so
+local 'make validate' matches the CI 'Run OPA Check' behavior.
+```
+
+</details>
+
+<!-- fingerprinting:phantom:poseidon:puma -->
+
+<!-- This is an auto-generated comment by CodeRabbit -->
+Implementation guidance: Update the Makefile validate target so local validation matches CI strictness. In Makefile, change the validate recipe from `@$(OPA) check policies` to `@$(OPA) check --strict policies`. Keep the target name, help text, OPA variable usage, and other Makefile targets unchanged. After editing, run `make validate` if opa is available to confirm the strict check passes.
