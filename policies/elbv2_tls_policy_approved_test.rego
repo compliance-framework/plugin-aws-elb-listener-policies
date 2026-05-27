@@ -20,7 +20,6 @@ base_input := {
 		"ssl_policy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
 		"certificate_arn": "arn:aws:acm:us-east-1:123456789012:certificate/abc",
 	},
-	"policy_inputs": {"approved_ssl_policies": ["ELBSecurityPolicy-TLS13-1-2-2021-06"]},
 }
 
 test_https_listener_compliant if {

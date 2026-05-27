@@ -35,16 +35,12 @@ risk_templates := [{
 }]
 
 config := object.get(input, "config", {})
-policy_inputs := object.get(input, "policy_inputs", {})
 resource := object.get(input, "resource", {})
 resource_type := object.get(resource, "type", "")
 listener_arn := object.get(config, "listener_arn", "unknown")
 protocol := upper(object.get(config, "protocol", ""))
 ssl_policy := object.get(config, "ssl_policy", "")
-approved_ssl_policies := object.get(policy_inputs, "approved_ssl_policies", [
-	"ELBSecurityPolicy-TLS13-1-2-2021-06",
-	"ELBSecurityPolicy-TLS-1-2-Ext-2018-06",
-])
+approved_ssl_policy_names := data.compliance_framework.elbv2_tls_policy_approved.approved_ssl_policies
 
 skip_reason := sprintf("Resource type %q is not a listener; this policy only applies to listener records.", [resource_type]) if {
 	resource_type != "listener"
@@ -56,7 +52,7 @@ is_tls_listener if {
 }
 
 approved_tls_policy if {
-	ssl_policy in approved_ssl_policies
+	ssl_policy in approved_ssl_policy_names
 }
 
 title := sprintf("Validate TLS policy for listener %s", [listener_arn])

@@ -20,7 +20,6 @@ base_input := {
 		"ssl_policy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
 		"certificate_arn": "arn:aws:acm:us-east-1:123456789012:certificate/abc",
 	},
-	"policy_inputs": {},
 }
 
 test_https_listener_compliant if {
@@ -47,9 +46,9 @@ test_allowed_plaintext_listener_compliant if {
 	inp := object.union_n([
 		base_input,
 		{"config": object.union(base_input.config, {"protocol": "HTTP", "port": 80})},
-		{"policy_inputs": {"allowed_plaintext_listener_arns": [arn]}},
 	])
 	count(policy.violation) == 0 with input as inp
+		with data.compliance_framework.elbv2_listener_https_enforcement.allowed_plaintext_listener_arns as [arn]
 }
 
 test_tcp_udp_listener_violates if {

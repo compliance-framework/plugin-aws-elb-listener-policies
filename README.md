@@ -24,9 +24,6 @@ Each policy evaluates documents where `input.resource.type == "listener"`.
     "port": 443,
     "ssl_policy": "ELBSecurityPolicy-TLS13-1-2-2021-06",
     "certificate_arn": "arn:aws:acm:us-east-1:123456789012:certificate/abc"
-  },
-  "policy_inputs": {
-    "approved_ssl_policies": ["ELBSecurityPolicy-TLS13-1-2-2021-06"]
   }
 }
 ```
@@ -44,14 +41,16 @@ Certificate expiry and renewal are intentionally out of scope for this bundle an
 
 All policies skip non-`listener` records. Policies with no meaningful TLS or information-movement evaluation for Gateway Load Balancer listeners skip `GENEVE`.
 
-## Policy inputs
+## Policy data
+
+Configurable policy defaults are stored in `policies/data.json` and may be overridden by the `policy_data` plugin under each policy package namespace.
 
 | Name | Default | Description |
 | --- | --- | --- |
-| `approved_ssl_policies` | `["ELBSecurityPolicy-TLS13-1-2-2021-06", "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"]` | SSL policy names allowed for `HTTPS` and `TLS` listeners. |
-| `allowed_plaintext_listener_arns` | `[]` | Listener ARNs allowed to use plaintext `HTTP`, `TCP`, `UDP`, or `TCP_UDP`. |
-| `approved_listener_protocols` | `[]` | Approved listener protocols. If omitted or empty, protocol checks pass. |
-| `approved_listener_ports` | `[]` | Approved listener ports. Empty means unrestricted. |
+| `data.compliance_framework.elbv2_tls_policy_approved.approved_ssl_policies` | `["ELBSecurityPolicy-TLS13-1-2-2021-06", "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"]` | SSL policy names allowed for `HTTPS` and `TLS` listeners. |
+| `data.compliance_framework.elbv2_listener_https_enforcement.allowed_plaintext_listener_arns` | `[]` | Listener ARNs allowed to use plaintext `HTTP`, `TCP`, `UDP`, or `TCP_UDP`. |
+| `data.compliance_framework.elbv2_information_movement.approved_listener_protocols` | `[]` | Approved listener protocols. If omitted or empty, protocol checks pass. |
+| `data.compliance_framework.elbv2_information_movement.approved_listener_ports` | `[]` | Approved listener ports. Empty means unrestricted. |
 
 ## Testing
 

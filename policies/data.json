@@ -1,0 +1,17 @@
+{
+  "compliance_framework": {
+    "elbv2_tls_policy_approved": {
+      "approved_ssl_policies": [
+        "ELBSecurityPolicy-TLS13-1-2-2021-06",
+        "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"
+      ]
+    },
+    "elbv2_information_movement": {
+      "approved_listener_protocols": [],
+      "approved_listener_ports": []
+    },
+    "elbv2_listener_https_enforcement": {
+      "allowed_plaintext_listener_arns": []
+    }
+  }
+}

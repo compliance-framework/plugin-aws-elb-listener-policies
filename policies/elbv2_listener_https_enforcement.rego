@@ -39,12 +39,11 @@ risk_templates := [{
 }]
 
 config := object.get(input, "config", {})
-policy_inputs := object.get(input, "policy_inputs", {})
 resource := object.get(input, "resource", {})
 resource_type := object.get(resource, "type", "")
 listener_arn := object.get(config, "listener_arn", "unknown")
 protocol := upper(object.get(config, "protocol", ""))
-allowed_plaintext := object.get(policy_inputs, "allowed_plaintext_listener_arns", [])
+allowed_plaintext_listener_arn_values := data.compliance_framework.elbv2_listener_https_enforcement.allowed_plaintext_listener_arns
 
 skip_reason := sprintf("Resource type %q is not a listener; this policy only applies to listener records.", [resource_type]) if {
 	resource_type != "listener"
@@ -60,7 +59,7 @@ plaintext_protocol if {
 }
 
 plaintext_allowed if {
-	listener_arn in allowed_plaintext
+	listener_arn in allowed_plaintext_listener_arn_values
 }
 
 title := sprintf("Validate HTTPS enforcement for listener %s", [listener_arn])
