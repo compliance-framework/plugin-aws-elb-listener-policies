@@ -24,22 +24,22 @@ base_input := {
 
 test_https_listener_compliant if {
 	count(policy.violation) == 0 with input as base_input
-		with data.compliance_framework.elbv2_information_movement.approved_listener_protocols as ["HTTPS", "TLS"]
-		with data.compliance_framework.elbv2_information_movement.approved_listener_ports as [443]
+		with data.approved_listener_protocols as ["HTTPS", "TLS"]
+		with data.approved_listener_ports as [443]
 }
 
 test_http_listener_violates if {
 	inp := object.union_n([base_input, {"config": object.union(base_input.config, {"protocol": "HTTP", "port": 80})}])
 	count(policy.violation) >= 1 with input as inp
-		with data.compliance_framework.elbv2_information_movement.approved_listener_protocols as ["HTTPS", "TLS"]
-		with data.compliance_framework.elbv2_information_movement.approved_listener_ports as [443]
+		with data.approved_listener_protocols as ["HTTPS", "TLS"]
+		with data.approved_listener_ports as [443]
 }
 
 test_geneve_listener_skipped if {
 	inp := object.union_n([base_input, {"config": object.union(base_input.config, {"protocol": "GENEVE", "port": 6081})}])
 	count(policy.violation) == 0 with input as inp
-		with data.compliance_framework.elbv2_information_movement.approved_listener_protocols as ["HTTPS", "TLS"]
-		with data.compliance_framework.elbv2_information_movement.approved_listener_ports as [443]
+		with data.approved_listener_protocols as ["HTTPS", "TLS"]
+		with data.approved_listener_ports as [443]
 }
 
 test_non_listener_record_skipped if {
@@ -50,8 +50,8 @@ test_non_listener_record_skipped if {
 test_empty_approved_lists_pass if {
 	inp := object.union_n([base_input, {"config": object.union(base_input.config, {"protocol": "HTTP", "port": 80})}])
 	count(policy.violation) == 0 with input as inp
-		with data.compliance_framework.elbv2_information_movement.approved_listener_protocols as []
-		with data.compliance_framework.elbv2_information_movement.approved_listener_ports as []
+		with data.approved_listener_protocols as []
+		with data.approved_listener_ports as []
 }
 
 test_missing_approved_lists_pass if {
@@ -61,6 +61,6 @@ test_missing_approved_lists_pass if {
 
 test_lowercase_approved_protocol_matches_normalized_listener_protocol if {
 	count(policy.violation) == 0 with input as base_input
-		with data.compliance_framework.elbv2_information_movement.approved_listener_protocols as ["https"]
-		with data.compliance_framework.elbv2_information_movement.approved_listener_ports as [443]
+		with data.approved_listener_protocols as ["https"]
+		with data.approved_listener_ports as [443]
 }

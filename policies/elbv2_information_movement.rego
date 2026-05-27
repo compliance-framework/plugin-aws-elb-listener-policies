@@ -40,8 +40,8 @@ resource_type := object.get(resource, "type", "")
 listener_arn := object.get(config, "listener_arn", "unknown")
 protocol := upper(object.get(config, "protocol", ""))
 port := object.get(config, "port", 0)
-approved_listener_protocol_values := data.compliance_framework.elbv2_information_movement.approved_listener_protocols
-approved_listener_port_values := data.compliance_framework.elbv2_information_movement.approved_listener_ports
+approved_listener_protocol_values := data.approved_listener_protocols
+approved_listener_port_values := data.approved_listener_ports
 approved_listener_protocols_normalized := {upper(p) | p := approved_listener_protocol_values[_]}
 
 skip_reason := sprintf("Resource type %q is not a listener; this policy only applies to listener records.", [resource_type]) if {

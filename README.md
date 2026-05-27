@@ -43,14 +43,14 @@ All policies skip non-`listener` records. Policies with no meaningful TLS or inf
 
 ## Policy data
 
-Configurable policy defaults are stored in `policies/data.json` and may be overridden by the `policy_data` plugin under each policy package namespace.
+Configurable policy defaults are stored in `policies/data.json` and may be overridden by the `policy_data` plugin as flattened data parameters.
 
 | Name | Default | Description |
 | --- | --- | --- |
-| `data.compliance_framework.elbv2_tls_policy_approved.approved_ssl_policies` | `["ELBSecurityPolicy-TLS13-1-2-2021-06", "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"]` | SSL policy names allowed for `HTTPS` and `TLS` listeners. |
-| `data.compliance_framework.elbv2_listener_https_enforcement.allowed_plaintext_listener_arns` | `[]` | Listener ARNs allowed to use plaintext `HTTP`, `TCP`, `UDP`, or `TCP_UDP`. |
-| `data.compliance_framework.elbv2_information_movement.approved_listener_protocols` | `[]` | Approved listener protocols. If omitted or empty, protocol checks pass. |
-| `data.compliance_framework.elbv2_information_movement.approved_listener_ports` | `[]` | Approved listener ports. Empty means unrestricted. |
+| `data.approved_ssl_policies` | `["ELBSecurityPolicy-TLS13-1-2-2021-06", "ELBSecurityPolicy-TLS-1-2-Ext-2018-06"]` | SSL policy names allowed for `HTTPS` and `TLS` listeners. |
+| `data.allowed_plaintext_listener_arns` | `[]` | Listener ARNs allowed to use plaintext `HTTP`, `TCP`, `UDP`, or `TCP_UDP`. |
+| `data.approved_listener_protocols` | `[]` | Approved listener protocols. If omitted or empty, protocol checks pass. |
+| `data.approved_listener_ports` | `[]` | Approved listener ports. Empty means unrestricted. |
 
 ## Testing
 

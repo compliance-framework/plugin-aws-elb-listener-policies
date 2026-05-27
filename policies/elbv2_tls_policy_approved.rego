@@ -40,7 +40,7 @@ resource_type := object.get(resource, "type", "")
 listener_arn := object.get(config, "listener_arn", "unknown")
 protocol := upper(object.get(config, "protocol", ""))
 ssl_policy := object.get(config, "ssl_policy", "")
-approved_ssl_policy_names := data.compliance_framework.elbv2_tls_policy_approved.approved_ssl_policies
+approved_ssl_policy_names := data.approved_ssl_policies
 
 skip_reason := sprintf("Resource type %q is not a listener; this policy only applies to listener records.", [resource_type]) if {
 	resource_type != "listener"
