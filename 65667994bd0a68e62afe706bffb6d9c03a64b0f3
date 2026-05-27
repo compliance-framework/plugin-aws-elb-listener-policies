@@ -1,0 +1,430 @@
+lisa-addressed:
+---
+Comment (.github/workflows/build-and-upload.yml:33):
+_⚠️ Potential issue_ | _🟠 Major_ | _⚖️ Poor tradeoff_
+
+**Fix `:latest` being overwritten by prerelease tags**
+- In `.github/workflows/build-and-upload.yml` (lines 31-33), `gooci Upload Latest` runs without any `if:` guard, so `ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}:latest` will be updated on every workflow run, including prerelease-like tags if they trigger the workflow.
+- If `:latest` should stay stable-only, add filtering based on the trigger/tag (e.g., tag name conventions or move to a `release`-event workflow where `github.event.release.prerelease` is available) instead of using the prerelease check shown in the suggested diff.
+
+<details>
+<summary>🧰 Tools</summary>
+
+<details>
+<summary>🪛 zizmor (1.25.2)</summary>
+
+[warning] 32-32: code injection via template expansion (template-injection): may expand into attacker-controllable code
+
+(template-injection)
+
+---
+
+[error] 32-32: code injection via template expansion (template-injection): may expand into attacker-controllable code
+
+(template-injection)
+
+</details>
+
+</details>
+
+<details>
+<summary>🤖 Prompt for AI Agents</summary>
+
+```
+Verify each finding against current code. Fix only still-valid issues, skip the
+rest with a brief reason, keep changes minimal, and validate.
+
+In @.github/workflows/build-and-upload.yml around lines 31 - 33, The "gooci
+Upload Latest" step currently runs unconditionally and will push the :latest tag
+even for prerelease-triggered runs; update that step (the one whose run is
+"gooci upload-single dist/bundle.tar.gz ghcr.io/${{ github.repository_owner
+}}/${{ github.event.repository.name }}:latest") to only run for stable releases
+by adding an appropriate if: guard (for example require the workflow to be a
+release event and github.event.release.prerelease == false, or require the ref
+to be a tag matching your stable tag pattern) so :latest is only updated for
+non-prerelease/stable tags.
+```
+
+</details>
+
+<!-- fingerprinting:phantom:poseidon:puma -->
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+Replies:
+**lisa implementation guidance:** Update .github/workflows/build-and-upload.yml so the 'gooci Upload Latest' step only runs for stable tag releases. The reusable workflow is invoked by .github/workflows/release.yml on every pushed tag, so add an if: guard to the Latest upload step based on github.ref_type == 'tag' and a stable tag pattern, for example allow semantic version tags like v1.2.3 or 1.2.3 and exclude prerelease suffixes such as -rc.1, -beta, or -alpha. Keep the versioned upload unchanged. Avoid using github.event.release.prerelease because this workflow is triggered by push tags, not a release event.
+> Skipped: comment is from another GitHub bot.
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+**lisa implementation guidance:** Update .github/workflows/build-and-upload.yml so only the gooci Upload Latest step is guarded. Add an if: condition to that step that allows only stable tag refs, for example github.ref_type == 'tag' and the tag name matches a stable semantic version such as v1.2.3 or 1.2.3 with no prerelease suffix. Keep gooci Upload Version unchanged. Do not use github.event.release.prerelease because this workflow is workflow_call from a tag-push release workflow, not a release event.
+> Skipped: comment is from another GitHub bot.
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+---
+Comment (LICENSE:201):
+_🧹 Nitpick_ | _🔵 Trivial_
+
+**License change from AGPLv3 to Apache 2.0.**
+
+This PR replaces the AGPLv3 license with Apache 2.0, a permissive license that removes copyleft requirements. Ensure this change aligns with organizational licensing strategy and any downstream dependencies or integrations that may have relied on AGPLv3 terms.
+
+<details>
+<summary>🤖 Prompt for AI Agents</summary>
+
+```
+Verify each finding against current code. Fix only still-valid issues, skip the
+rest with a brief reason, keep changes minimal, and validate.
+
+In `@LICENSE` around lines 1 - 201, Change summary: the LICENSE file was changed
+from AGPLv3 to Apache-2.0. Verify and document this license change by confirming
+contributor/third-party consent for relicensing (search for any references to
+"AGPL", "AGPLv3" or contributor agreements), update repository metadata and
+manifests (e.g., package.json, pyproject.toml, or other LICENSE references) to
+"Apache-2.0", add or update a NOTICE file if required by dependencies, run a
+dependency license scan to find any AGPL-licensed components that conflict, and
+get formal approval from legal/OSS governance before merging; make these edits
+in the LICENSE file and any files that reference AGPL so the repo consistently
+reflects Apache-2.0.
+```
+
+</details>
+
+<!-- fingerprinting:phantom:poseidon:puma -->
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+Replies:
+thanks! we should keep AGPLv3 indeed. @ccf-lisa please take notes.
+> Seems like the humans are having a chat. I'll hop back into my burrow for now. If you need me again, just tag @coderabbitai in a new comment, and I'll come hopping out!
+
+<!-- This is an auto-generated mute comment by CodeRabbit -->
+**lisa implementation guidance:** Restore the repository license to AGPLv3 because the existing thread reply explicitly says to keep AGPLv3. Replace LICENSE with the GNU Affero General Public License v3 text and search the repo for Apache-2.0 or Apache License references introduced by this PR; update any repository metadata or docs so they consistently refer to AGPLv3. Do not add unrelated NOTICE or dependency-license work unless there is an existing repo convention requiring it.
+**lisa implementation guidance:** Restore LICENSE to the GNU Affero General Public License v3 text because the human reply explicitly says to keep AGPLv3. Then search the repository for Apache-2.0 or Apache License references introduced by this PR and update repository metadata/docs so they consistently refer to AGPLv3. Do not add unrelated NOTICE or dependency-license scan output unless there is already a repo convention requiring it.
+---
+Comment (Makefile:2):
+_🧹 Nitpick_ | _🔵 Trivial_ | _⚡ Quick win_
+
+**OPA availability check removed.**
+
+The previous `OPA` variable check with an error guard ensured `opa` was available before running targets. Without it, users will see a less helpful `opa: command not found` shell error instead of a clear Makefile error message.
+
+<details>
+<summary>🛡️ Optional: restore graceful error handling</summary>
+
+```diff
++OPA := $(shell command -v opa 2> /dev/null)
++ifndef OPA
++$(error "opa CLI not found. Install from https://www.openpolicyagent.org/docs/latest/#running-opa")
++endif
++
+ test:        ## Run policy unit tests
+-	`@opa` test policies
++	@$(OPA) test policies
+```
+</details>
+
+<details>
+<summary>🤖 Prompt for AI Agents</summary>
+
+```
+Verify each finding against current code. Fix only still-valid issues, skip the
+rest with a brief reason, keep changes minimal, and validate.
+
+In `@Makefile` around lines 1 - 2, The Makefile lost its previous OPA availability
+check causing an unhelpful shell error when running the test target; restore a
+guard that defines or locates the OPA binary (e.g., reinstating the OPA
+variable) and add a pre-check in the test target (or a top-level check) that
+exits with a clear Makefile error message if OPA is not found; update the test
+target that calls opa (the "test" rule) to use the $(OPA) variable and to fail
+early with an explanatory message when $(OPA) is undefined or not on PATH.
+```
+
+</details>
+
+<!-- fingerprinting:phantom:poseidon:puma -->
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+Replies:
+**lisa implementation guidance:** In Makefile, restore a clear OPA CLI availability guard. Define OPA := $(shell command -v opa 2> /dev/null) near the top, add an ifndef OPA block with a helpful $(error opa CLI not found...) message, and change the test, validate, and build targets to invoke $(OPA) instead of bare opa. Keep the existing target behavior otherwise.
+> Skipped: comment is from another GitHub bot.
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+**lisa implementation guidance:** In Makefile, restore a clear OPA CLI availability guard. Define OPA := $(shell command -v opa 2> /dev/null) near the top, add an ifndef OPA block with a helpful $(error opa CLI not found. Install from https://www.openpolicyagent.org/docs/latest/#running-opa) message, and change test, validate, and build to invoke $(OPA) instead of bare opa. Preserve the existing target behavior otherwise.
+> Skipped: comment is from another GitHub bot.
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+---
+Comment (Makefile:12):
+_🧹 Nitpick_ | _🔵 Trivial_ | _⚡ Quick win_
+
+**Declare targets as .PHONY.**
+
+The targets `test`, `validate`, `clean`, and `build` do not produce files matching their names and should be declared `.PHONY` to avoid conflicts and ensure they always run. As per coding guidelines, this is a Make best practice.
+
+<details>
+<summary>📋 Proposed fix</summary>
+
+```diff
++.PHONY: test validate clean build
++
+ test:        ## Run policy unit tests
+ 	`@opa` test policies
+```
+</details>
+
+<details>
+<summary>🧰 Tools</summary>
+
+<details>
+<summary>🪛 checkmake (0.3.2)</summary>
+
+[warning] 10-10: Required target "all" is missing from the Makefile.
+
+(minphony)
+
+---
+
+[warning] 10-10: Required target "clean" must be declared PHONY.
+
+(minphony)
+
+---
+
+[warning] 10-10: Required target "test" must be declared PHONY.
+
+(minphony)
+
+</details>
+
+</details>
+
+<details>
+<summary>🤖 Prompt for AI Agents</summary>
+
+```
+Verify each finding against current code. Fix only still-valid issues, skip the
+rest with a brief reason, keep changes minimal, and validate.
+
+In `@Makefile` around lines 1 - 12, Add a .PHONY declaration listing the
+non-file-producing make targets to ensure they always run: declare .PHONY: test
+validate clean build at the top (or near the target definitions) so make treats
+the targets test, validate, clean, and build as phony rather than real files;
+update the Makefile to include that single .PHONY line referencing those target
+names.
+```
+
+</details>
+
+<!-- fingerprinting:phantom:poseidon:puma -->
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+Replies:
+**lisa implementation guidance:** Add a single .PHONY declaration near the top of Makefile listing every non-file target currently present: test validate clean build. Do not add an all target unless separately requested.
+> Skipped: comment is from another GitHub bot.
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+**lisa implementation guidance:** Add a single .PHONY declaration near the top of Makefile listing the non-file targets currently present: test validate clean build. Do not add an all target unless separately requested.
+> Skipped: comment is from another GitHub bot.
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+---
+Comment (policies/elbv2_listener_https_enforcement_test.rego:53):
+_🛠️ Refactor suggestion_ | _🟠 Major_ | _⚡ Quick win_
+
+**Add a `TCP_UDP` violation test to lock policy behavior.**
+
+Given ELBv2 protocol coverage, include a case asserting `TCP_UDP` (non-allowlisted) produces a violation.
+
+<details>
+<summary>Suggested test</summary>
+
+```diff
++test_tcp_udp_listener_violates if {
++	inp := object.union_n([base_input, {"config": object.union(base_input.config, {"protocol": "TCP_UDP", "port": 443})}])
++	count(policy.violation) >= 1 with input as inp
++}
+```
+</details>
+
+<!-- suggestion_start -->
+
+<details>
+<summary>📝 Committable suggestion</summary>
+
+> ‼️ **IMPORTANT**
+> Carefully review the code before committing. Ensure that it accurately replaces the highlighted code, contains no missing lines, and has no issues with indentation. Thoroughly test & benchmark the code to ensure it meets the requirements.
+
+```suggestion
+test_allowed_plaintext_listener_compliant if {
+	arn := base_input.config.listener_arn
+	inp := object.union_n([
+		base_input,
+		{"config": object.union(base_input.config, {"protocol": "HTTP", "port": 80})},
+		{"policy_inputs": {"allowed_plaintext_listener_arns": [arn]}},
+	])
+	count(policy.violation) == 0 with input as inp
+}
+
+test_tcp_udp_listener_violates if {
+	inp := object.union_n([base_input, {"config": object.union(base_input.config, {"protocol": "TCP_UDP", "port": 443})}])
+	count(policy.violation) >= 1 with input as inp
+}
+```
+
+</details>
+
+<!-- suggestion_end -->
+
+<details>
+<summary>🤖 Prompt for AI Agents</summary>
+
+```
+Verify each finding against current code. Fix only still-valid issues, skip the
+rest with a brief reason, keep changes minimal, and validate.
+
+In `@policies/elbv2_listener_https_enforcement_test.rego` around lines 45 - 53,
+Add a new test function (e.g., test_tcp_udp_listener_violates) mirroring
+test_allowed_plaintext_listener_compliant but set the listener protocol to
+"TCP_UDP" (and a suitable port) and ensure the listener ARN is NOT in
+allowed_plaintext_listener_arns; then assert that count(policy.violation) > 0
+(or == 1) with input as inp to verify a TCP_UDP listener triggers a violation.
+Reference the existing symbols: test_allowed_plaintext_listener_compliant,
+base_input.config.listener_arn, allowed_plaintext_listener_arns, and
+policy.violation when adding the new test.
+```
+
+</details>
+
+<!-- fingerprinting:phantom:poseidon:hawk -->
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+Replies:
+**lisa implementation guidance:** In policies/elbv2_listener_https_enforcement_test.rego, add a new test named test_tcp_udp_listener_violates after the existing plaintext tests. Build inp from base_input with config.protocol set to "TCP_UDP" and port set to 443 or another numeric port, do not add the listener ARN to allowed_plaintext_listener_arns, and assert count(policy.violation) >= 1 with input as inp. This test should accompany the policy change that classifies TCP_UDP as plaintext.
+> Skipped: comment is from another GitHub bot.
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+**lisa implementation guidance:** In policies/elbv2_listener_https_enforcement_test.rego, add a focused test named test_tcp_udp_listener_violates after the existing plaintext tests. Build inp from base_input with config.protocol set to "TCP_UDP" and port set to a numeric value such as 443, do not add the listener ARN to allowed_plaintext_listener_arns, and assert count(policy.violation) >= 1 with input as inp. This test should accompany the policy change that classifies TCP_UDP as plaintext.
+> Skipped: comment is from another GitHub bot.
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+---
+Comment (policies/elbv2_listener_https_enforcement.rego:62):
+_⚠️ Potential issue_ | _🟠 Major_ | _⚡ Quick win_
+
+**`TCP_UDP` is currently unclassified and can bypass enforcement.**
+
+`plaintext_protocol` omits `TCP_UDP`, so a plaintext `TCP_UDP` listener will not trigger a violation.
+
+<details>
+<summary>Proposed fix</summary>
+
+```diff
+ plaintext_protocol if {
+-	protocol in {"HTTP", "TCP", "UDP"}
++	protocol in {"HTTP", "TCP", "UDP", "TCP_UDP"}
+ }
+```
+</details>
+
+<!-- suggestion_start -->
+
+<details>
+<summary>📝 Committable suggestion</summary>
+
+> ‼️ **IMPORTANT**
+> Carefully review the code before committing. Ensure that it accurately replaces the highlighted code, contains no missing lines, and has no issues with indentation. Thoroughly test & benchmark the code to ensure it meets the requirements.
+
+```suggestion
+plaintext_protocol if {
+	protocol in {"HTTP", "TCP", "UDP", "TCP_UDP"}
+}
+```
+
+</details>
+
+<!-- suggestion_end -->
+
+<details>
+<summary>🤖 Prompt for AI Agents</summary>
+
+```
+Verify each finding against current code. Fix only still-valid issues, skip the
+rest with a brief reason, keep changes minimal, and validate.
+
+In `@policies/elbv2_listener_https_enforcement.rego` around lines 60 - 62, The
+rule plaintext_protocol currently defines plaintext protocols as protocol in
+{"HTTP", "TCP", "UDP"} but omits "TCP_UDP", so listeners with protocol "TCP_UDP"
+are not flagged; update the plaintext_protocol rule to include "TCP_UDP" in the
+set (i.e., protocol in {"HTTP", "TCP", "UDP", "TCP_UDP"}) so that TCP_UDP
+listeners are treated as plaintext and will trigger enforcement in the rest of
+the policy (referencing the plaintext_protocol rule name to locate and modify
+the set).
+```
+
+</details>
+
+<!-- fingerprinting:phantom:poseidon:hawk -->
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+Replies:
+**lisa implementation guidance:** In policies/elbv2_listener_https_enforcement.rego, update plaintext_protocol so the protocol set includes "TCP_UDP" alongside "HTTP", "TCP", and "UDP". Keep the existing GENEVE skip unchanged and do not inspect load balancer scheme.
+> Skipped: comment is from another GitHub bot.
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+**lisa implementation guidance:** In policies/elbv2_listener_https_enforcement.rego, update plaintext_protocol so the protocol set includes "TCP_UDP" alongside "HTTP", "TCP", and "UDP". Keep the existing GENEVE skip unchanged and do not inspect parent load balancer scheme.
+> Skipped: comment is from another GitHub bot.
+
+<!-- This is an auto-generated reply by CodeRabbit -->
+---
+Comment (policies/elbv2_certificate_in_use.rego:3):
+**Drop the deprecated `import future.keywords.in`.** CI runs OPA 1.6.0, where `in`/`if`/`contains` are built-in language keywords and this import is a no-op backwards-compat artifact (regal flags `future.keywords` as deprecated). I confirmed removing it from all four policies keeps `opa test policies` at 21/21 and `opa check --strict policies` clean. Remove this line here and in the other three policy files for maintainability.
+Replies:
+**lisa implementation guidance:** Remove the deprecated import future.keywords.in line from all four policy implementation files: policies/elbv2_certificate_in_use.rego, policies/elbv2_information_movement.rego, policies/elbv2_listener_https_enforcement.rego, and policies/elbv2_tls_policy_approved.rego. Do not remove imports from test files unless they also contain this exact deprecated import. Run opa test policies and opa check --strict policies if OPA is available.
+**lisa implementation guidance:** Remove the deprecated import future.keywords.in line from all four policy implementation files: policies/elbv2_certificate_in_use.rego, policies/elbv2_information_movement.rego, policies/elbv2_listener_https_enforcement.rego, and policies/elbv2_tls_policy_approved.rego. Do not remove imports from test files unless they also contain this exact deprecated import. Run opa test policies and opa check --strict policies if OPA is available.
+---
+Comment (policies/elbv2_information_movement.rego:3):
+Deprecated/no-op import under OPA 1.x — remove (see thread on `elbv2_certificate_in_use.rego:3`).
+Replies:
+**lisa implementation guidance:** Remove the deprecated import future.keywords.in line from policies/elbv2_information_movement.rego as part of the same cleanup across the four policy files. Verify the file still parses under OPA 1.x.
+**lisa implementation guidance:** Remove the deprecated import future.keywords.in line from policies/elbv2_information_movement.rego as part of the same cleanup across the four policy implementation files. Preserve the package declaration and policy logic, and verify the file still parses under OPA 1.x.
+---
+Comment (policies/elbv2_listener_https_enforcement.rego:3):
+Deprecated/no-op import under OPA 1.x — remove (see thread on `elbv2_certificate_in_use.rego:3`).
+Replies:
+**lisa implementation guidance:** Remove the deprecated import future.keywords.in line from policies/elbv2_listener_https_enforcement.rego as part of the same cleanup across the four policy files. Preserve the existing package declaration and policy logic.
+**lisa implementation guidance:** Remove the deprecated import future.keywords.in line from policies/elbv2_listener_https_enforcement.rego as part of the same cleanup across the four policy implementation files. Preserve the package declaration, GENEVE skip, plaintext logic, and policy behavior.
+---
+Comment (policies/elbv2_tls_policy_approved.rego:3):
+Deprecated/no-op import under OPA 1.x — remove (see thread on `elbv2_certificate_in_use.rego:3`).
+Replies:
+**lisa implementation guidance:** Remove the deprecated import future.keywords.in line from policies/elbv2_tls_policy_approved.rego as part of the same cleanup across the four policy files. Preserve the existing package declaration and policy logic.
+**lisa implementation guidance:** Remove the deprecated import future.keywords.in line from policies/elbv2_tls_policy_approved.rego as part of the same cleanup across the four policy implementation files. Preserve the package declaration and policy logic.
+---
+Comment (README.md:53):
+Default is wrong. The code default for `approved_listener_protocols` is `[]` (`object.get(policy_inputs, "approved_listener_protocols", [])`), not `["HTTPS", "TLS"]` — that value appears to be lifted from the test `base_input`. As written the column contradicts its own description ("If omitted or empty, protocol checks pass"). Change the default cell to `[]` / "none — check disabled unless set". The opt-in behavior itself is correct per design; only the doc is wrong.
+Replies:
+**lisa implementation guidance:** In README.md under the Policy inputs table, change the Default for approved_listener_protocols from ["HTTPS", "TLS"] to [] or a clear text equivalent such as none - check disabled unless set. Keep the description that omitted or empty protocol lists make protocol checks pass. Do not change the opt-in behavior in code.
+**lisa implementation guidance:** In README.md, update the Policy inputs table row for approved_listener_protocols so the Default column is [] or a clear text equivalent such as none - check disabled unless set. Keep the description that omitted or empty protocol lists make protocol checks pass. Do not change code behavior for the opt-in information movement allow-list.
+---
+Comment (policies/elbv2_information_movement.rego:67):
+Asymmetric case handling. `protocol` is normalized with `upper()` (line 44) but `approved_listener_protocols` is compared raw, so an allow-list entry of `"https"` will not match a `HTTPS` listener and produces a false `protocol_not_approved` violation (verified with `opa eval`). Either `upper()` the allow-list entries before the membership check or document that entries must be uppercase.
+Replies:
+**lisa implementation guidance:** In policies/elbv2_information_movement.rego, normalize approved listener protocol values before membership checks so lowercase allow-list entries match normalized listener protocols. Add a derived set such as approved_listener_protocols_normalized := {upper(p) | p := approved_listener_protocols[_]} and change protocol_approved to check protocol in approved_listener_protocols_normalized. Keep protocol_check_enabled based on count(approved_listener_protocols) so empty or omitted lists still disable the check. Add or update a focused test in policies/elbv2_information_movement_test.rego showing policy_inputs.approved_listener_protocols: ["https"] accepts an HTTPS listener.
+**lisa implementation guidance:** In policies/elbv2_information_movement.rego, normalize approved listener protocol values before membership checks so lowercase allow-list entries match the normalized listener protocol. Add a derived set such as approved_listener_protocols_normalized := {upper(p) | p := approved_listener_protocols[_]} and change protocol_approved to check protocol in approved_listener_protocols_normalized. Keep protocol_check_enabled based on count(approved_listener_protocols) so empty or omitted lists still disable the check. Add or update a focused test in policies/elbv2_information_movement_test.rego showing policy_inputs.approved_listener_protocols: ["https"] accepts an HTTPS listener.
+---
+Comment (policies/elbv2_tls_policy_approved.rego:58):
+`is_tls_listener` requires `ssl_policy != ""`, so an HTTPS/TLS listener with a missing/empty `ssl_policy` is silently not evaluated rather than flagged. If empty SSL policy on a TLS listener is a real (mis)configuration in the evidence contract, consider treating it as a violation; if it cannot occur, a one-line comment noting why would help. Non-blocking.
+Replies:
+**lisa implementation guidance:** In policies/elbv2_tls_policy_approved.rego, make HTTPS/TLS listeners with missing or empty config.ssl_policy produce a weak_tls_policy violation instead of being skipped. Remove the ssl_policy != "" condition from is_tls_listener so any listener resource with protocol HTTPS or TLS is evaluated, and rely on approved_tls_policy membership to fail for the empty string. Add or update a test in policies/elbv2_tls_policy_approved_test.rego that sets protocol to HTTPS and ssl_policy to "" and asserts count(policy.violation) >= 1. Keep GENEVE and non-listener skip behavior unchanged.
+**lisa implementation guidance:** In policies/elbv2_tls_policy_approved.rego, make HTTPS/TLS listeners with missing or empty config.ssl_policy produce a weak_tls_policy violation instead of being skipped. Remove the ssl_policy != "" condition from is_tls_listener so any listener resource with protocol HTTPS or TLS is evaluated, and rely on approved_tls_policy membership to fail for the empty string. Add or update a test in policies/elbv2_tls_policy_approved_test.rego that sets protocol to HTTPS and ssl_policy to "" and asserts count(policy.violation) >= 1. Keep GENEVE and non-listener skip behavior unchanged.
+Implementation guidance: Update .github/workflows/build-and-upload.yml so only the gooci Upload Latest step is guarded. The workflow is invoked from the tag-push release workflow, so do not use github.event.release.prerelease. Add an if condition to that step requiring github.ref_type == 'tag' and a stable semantic version tag with no prerelease suffix, such as v1.2.3 or 1.2.3. Keep the versioned upload step unchanged.
+Implementation guidance: Restore LICENSE to the GNU Affero General Public License v3 text because the human reply explicitly says to keep AGPLv3. Then search the repository for Apache-2.0, Apache License, or other license metadata introduced by this PR and update those references so repository metadata and docs consistently refer to AGPLv3. Do not add unrelated NOTICE files or dependency scan artifacts unless the repo already has a convention for them.
+Implementation guidance: In Makefile, restore a clear OPA CLI availability guard. Define OPA := $(shell command -v opa 2> /dev/null) near the top, add an ifndef OPA block with a helpful $(error opa CLI not found. Install from https://www.openpolicyagent.org/docs/latest/#running-opa) message, and update test, validate, and build to invoke $(OPA) instead of bare opa. Preserve each target's existing behavior otherwise.
+Implementation guidance: Add a single .PHONY declaration near the top of Makefile listing the non-file targets currently present: test validate clean build. Do not add an all target unless separately requested.
+Implementation guidance: In policies/elbv2_listener_https_enforcement_test.rego, add a focused test named test_tcp_udp_listener_violates after the existing plaintext listener tests. Build inp from base_input with config.protocol set to "TCP_UDP" and port set to a numeric value such as 443. Do not add the listener ARN to allowed_plaintext_listener_arns. Assert count(policy.violation) >= 1 with input as inp. This test should accompany the policy change that classifies TCP_UDP as plaintext.
+Implementation guidance: In policies/elbv2_listener_https_enforcement.rego, update plaintext_protocol so the protocol set includes "TCP_UDP" alongside "HTTP", "TCP", and "UDP". Keep the existing GENEVE skip unchanged and do not inspect the parent load balancer scheme.
+Implementation guidance: Remove the deprecated import future.keywords.in line from all four policy implementation files: policies/elbv2_certificate_in_use.rego, policies/elbv2_information_movement.rego, policies/elbv2_listener_https_enforcement.rego, and policies/elbv2_tls_policy_approved.rego. Do not remove imports from test files unless they also contain this exact deprecated import. Run opa test policies and opa check --strict policies if OPA is available.
+Implementation guidance: Remove the deprecated import future.keywords.in line from policies/elbv2_information_movement.rego as part of the same cleanup across the four policy implementation files. Preserve the package declaration and policy logic, and verify the file still parses under OPA 1.x.
+Implementation guidance: Remove the deprecated import future.keywords.in line from policies/elbv2_listener_https_enforcement.rego as part of the same cleanup across the four policy implementation files. Preserve the package declaration, GENEVE skip, plaintext logic, and policy behavior.
+Implementation guidance: Remove the deprecated import future.keywords.in line from policies/elbv2_tls_policy_approved.rego as part of the same cleanup across the four policy implementation files. Preserve the package declaration and policy logic.
+Implementation guidance: In README.md, update the Policy inputs table row for approved_listener_protocols so the Default column is [] or a clear text equivalent such as none - check disabled unless set. Keep the description that omitted or empty protocol lists make protocol checks pass. Do not change code behavior for the opt-in information movement allow-list.
+Implementation guidance: In policies/elbv2_information_movement.rego, normalize approved listener protocol values before membership checks so lowercase allow-list entries match the normalized listener protocol. Add a derived set such as approved_listener_protocols_normalized := {upper(p) | p := approved_listener_protocols[_]} and change protocol_approved to check protocol in approved_listener_protocols_normalized. Keep protocol_check_enabled based on count(approved_listener_protocols) so empty or omitted lists still disable the check. Add or update a focused test in policies/elbv2_information_movement_test.rego showing policy_inputs.approved_listener_protocols: ["https"] accepts an HTTPS listener.
+Implementation guidance: In policies/elbv2_tls_policy_approved.rego, make HTTPS/TLS listeners with missing or empty config.ssl_policy produce a weak_tls_policy violation instead of being skipped. Remove the ssl_policy != "" condition from is_tls_listener so any listener resource with protocol HTTPS or TLS is evaluated, and rely on approved_tls_policy membership to fail for the empty string. Add or update a test in policies/elbv2_tls_policy_approved_test.rego that sets protocol to HTTPS and ssl_policy to "" and asserts count(policy.violation) >= 1. Keep GENEVE and non-listener skip behavior unchanged.
