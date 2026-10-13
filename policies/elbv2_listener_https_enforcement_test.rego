@@ -48,7 +48,7 @@ test_allowed_plaintext_listener_compliant if {
 		{"config": object.union(base_input.config, {"protocol": "HTTP", "port": 80})},
 	])
 	count(policy.violation) == 0 with input as inp
-		with data.allowed_plaintext_listener_arns as [arn]
+		with data.allowed_plaintext_listener_arns as [arn] # regal ignore:unresolved-reference
 }
 
 test_tcp_udp_listener_violates if {
