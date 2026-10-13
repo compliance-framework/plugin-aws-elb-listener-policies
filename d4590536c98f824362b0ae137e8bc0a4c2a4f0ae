@@ -1,0 +1,6 @@
+lisa-design:
+- ci.yml is copied verbatim from compliance-framework/mock-plugin-policies-1 (workflows v1.5.1 @7b55019); default branch is main so the push trigger is unchanged; policies live in policies/ so no directory input.
+- push.yml and test.yml deleted: push.yml only called test.yml and nothing else calls either; release.yml and build-and-upload.yml untouched (W3 replaces them).
+- Regal unresolved-reference errors for data.json keys are silenced with line-scoped trailing `# regal ignore:unresolved-reference` comments (15 sites), not a repo .regal config, so CI keeps using the shared config. Trailing (not line-above) so opa fmt does not re-indent `with` clauses.
+- Only errors fixed (user decision 2026-10-13): all 34 Regal warnings left as they are.
+- Behaviour proof: opa eval data.compliance_framework on main vs branch over 34 inputs x 3 data variants: raw JSON identical.
