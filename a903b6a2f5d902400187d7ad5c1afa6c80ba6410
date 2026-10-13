@@ -1,0 +1,6 @@
+lisa-selfreview:
+Self-review pass 1 (strict): verdict approve, no findings.
+- All six caller/config files are byte-identical to the reviewed and merged reference (plugin-file-attestation-policies#4); every shared-workflow pin is 6e7fc9c # v1.5.2; no v1.5.1 pin left.
+- release-please-config.json has no drift from workflows release-please/defaults.json at v1.5.2; packages "." release-type simple.
+- Manifest seeded at 0.1.0 = releases/latest v0.1.0 (final), commit 6f2924c is an ancestor of main.
+- Bundle stays built from policies/ only; old and shared opa build commands give byte-identical tarballs with OPA 1.14.1.
