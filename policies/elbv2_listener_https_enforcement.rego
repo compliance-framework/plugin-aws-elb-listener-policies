@@ -43,7 +43,7 @@ resource := object.get(input, "resource", {})
 resource_type := object.get(resource, "type", "")
 listener_arn := object.get(config, "listener_arn", "unknown")
 protocol := upper(object.get(config, "protocol", ""))
-allowed_plaintext_listener_arn_values := data.allowed_plaintext_listener_arns
+allowed_plaintext_listener_arn_values := data.allowed_plaintext_listener_arns # regal ignore:unresolved-reference
 
 skip_reason := sprintf("Resource type %q is not a listener; this policy only applies to listener records.", [resource_type]) if {
 	resource_type != "listener"
