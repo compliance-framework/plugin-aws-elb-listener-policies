@@ -4,3 +4,6 @@ Self-review pass 1 (strict): verdict approve, no findings.
 - release-please-config.json has no drift from workflows release-please/defaults.json at v1.5.2; packages "." release-type simple.
 - Manifest seeded at 0.1.0 = releases/latest v0.1.0 (final), commit 6f2924c is an ancestor of main.
 - Bundle stays built from policies/ only; old and shared opa build commands give byte-identical tarballs with OPA 1.14.1.
+
+lisa-design:
+Default branch is main (no master handling). README documents only testing and make build, not releasing, so it is unchanged (spec step 9). Makefile's build target is unchanged.
